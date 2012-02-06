@@ -28,9 +28,9 @@ describe RaiseErrorMatcher do
     RaiseErrorMatcher.new(ExpectedException, "message").matches?(proc).should == true
   end
 
-  it "does not match when the proc does not raise the expected exception" do
+  it "lets an unexpected exception propagate" do
     proc = Proc.new { raise UnexpectedException }
-    RaiseErrorMatcher.new(ExpectedException, nil).matches?(proc).should == false
+    lambda { RaiseErrorMatcher.new(ExpectedException, nil).matches?(proc) }.should raise_error(UnexpectedException)
   end
 
   it "does not match when the proc raises the expected exception with an unexpected message" do
@@ -44,11 +44,11 @@ describe RaiseErrorMatcher do
   end
 
   it "provides a useful failure message" do
-    proc = Proc.new { raise UnexpectedException, "unexpected" }
+    proc = Proc.new { raise ExpectedException, "unexpected" }
     matcher = RaiseErrorMatcher.new(ExpectedException, "expected")
     matcher.matches?(proc)
     matcher.failure_message.should ==
-      ["Expected ExpectedException (expected)", "but got UnexpectedException (unexpected)"]
+      ["Expected ExpectedException (expected)", "but got ExpectedException (unexpected)"]
   end
 
   it "provides a useful negative failure message" do
